@@ -32,6 +32,13 @@ if (UNIX)
         main.cpp
         ${sciter-sdk_SOURCE_DIR}/include/sciter-gtk-main.cpp
     )
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+
+    target_include_directories(hello PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_link_libraries(hello PRIVATE ${GTK3_LIBRARIES})
+
 else() # WIN32
     set(SCITER_SDK_PLATFORM_PATH ${sciter-sdk_SOURCE_DIR}/bin.win)
     set(SCITER_SDK_PACKFOLDER_PATH ${SCITER_SDK_PLATFORM_PATH}/packfolder.exe)
@@ -53,22 +60,11 @@ add_custom_target(
 
 add_dependencies(hello ui)
 
-set(HELLO_INCLUDES ${sciter-sdk_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR})
-set(HELLO_LIBS ${CMAKE_DL_LIBS})
-
-if (UNIX)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-
-    link_directories(${GTK3_LIBRARY_DIRS})
-
-    list(APPEND HELLO_INCLUDES ${GTK3_INCLUDE_DIRS})
-    list(APPEND HELLO_LIBS ${GTK3_LIBRARIES})
-endif()
-
-include_directories(${HELLO_INCLUDES})
-
-target_link_libraries(hello ${HELLO_LIBS})
+target_include_directories(hello PRIVATE
+    ${sciter-sdk_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+target_link_libraries(hello PRIVATE ${CMAKE_DL_LIBS})
 
 add_custom_command(TARGET hello POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
